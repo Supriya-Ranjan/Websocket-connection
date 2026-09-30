@@ -1,11 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const http = require("http");
 const { Server } = require("socket.io");
 
-const io = new Server({
-  cors: true,
-});
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: process.env.CLIENT_URL || "*" },
+});
 
 // Middleware
 app.use(bodyParser.json());
@@ -41,5 +43,7 @@ io.on("connection", (socket) => {
   });
 });
 
-app.listen(8000, () => console.log("Http server running at PORT 8000"));
-io.listen(8001);
+app.get("/health", (req, res) => res.send("ok"));
+
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, () => console.log(`Server running at PORT ${PORT}`));
